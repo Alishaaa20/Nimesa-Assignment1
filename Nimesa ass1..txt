@@ -1,0 +1,73 @@
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.Scanner;
+
+public class WeatherDataFetcher {
+    private static final String API_BASE_URL = "https://samples.openweathermap.org/data/2.5/forecast/hourly?q=London,us&appid=b6907d289e10d714a6e88b30761fae22";
+
+    // Function to make an HTTP GET request and fetch the response as a String
+    private static String makeHttpGetRequest(String url) throws IOException {
+        HttpURLConnection connection = null;
+        StringBuilder response = new StringBuilder();
+
+        try {
+            URL apiURL = new URL(url);
+            connection = (HttpURLConnection) apiURL.openConnection();
+            connection.setRequestMethod("GET");
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                response.append(line);
+            }
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
+        }
+
+        return response.toString();
+    }
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+
+        while (true) {
+            System.out.println("1. Get weather");
+            System.out.println("2. Get Wind Speed");
+            System.out.println("3. Get Pressure");
+            System.out.println("0. Exit");
+
+            System.out.print("Enter your choice: ");
+            int choice = scanner.nextInt();
+
+            if (choice == 1) {
+                System.out.print("Enter the date (YYYY-MM-DD): ");
+                String date = scanner.next();
+                // Assuming you want weather data for the entire day, we use the base URL with "daily" forecast
+                String apiUrl = API_BASE_URL.replace("hourly", "daily");
+                apiUrl += "&dt=" + date;
+                try {
+                    String response = makeHttpGetRequest(apiUrl);
+                    System.out.println("Weather data for " + date + ":");
+                    System.out.println(response);
+                } catch (IOException e) {
+                    System.out.println("Error fetching weather data");
+                }
+            } else if (choice == 2) {
+                System.out.println("This API does not provide historical wind speed data.");
+            } else if (choice == 3) {
+                System.out.println("This API does not provide historical pressure data.");
+            } else if (choice == 0) {
+                System.out.println("Exiting the program.");
+                break;
+            } else {
+                System.out.println("Invalid choice. Please try again.");
+            }
+        }
+    }
+}
